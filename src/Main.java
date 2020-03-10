@@ -43,9 +43,10 @@ public class Main {
 
         System.out.println("Choose on of these functions. Input number of function you ant to integrate \n" +
                 "1) y = 5x - 3 \n" +
-                "2) y = 4 / x \n" +
-                "3) y = x^4 \n" +
-                "4) y = sqrt(x)");
+                "2) y = 2 / x \n" +
+                "3) y = x^2 \n" +
+                "4) y = sqrt(x) \n"+
+                "5) y = sin(x) ");
         Function function = choose();
 
         System.out.println("input lower limit  of the integration\n " +
@@ -59,8 +60,6 @@ public class Main {
         System.out.println("Input accuracy");
         double accuracy = input();
 
-        function.setAccuracy(accuracy);
-
         if (upperLimit < lowerLimit) {
             upperLimit += lowerLimit;
             lowerLimit = upperLimit - lowerLimit;
@@ -72,11 +71,8 @@ public class Main {
             return;
         }
 
-        function.setUpperLimit(upperLimit);
-        function.setLowerLimit(lowerLimit);
-
-        if (function.isValid()) {
-           double result[] = calculate(function);
+        if (function.isValid(lowerLimit, upperLimit)) {
+           double result[] = calculate(function, lowerLimit, upperLimit, accuracy);
            if (result[1+1]  < accuracy)
                System.out.println("Integral  i: " + result[0] + "\n amount of div i: " + result[1]+"\n error i: "+result[1+1]);
            else System.out.println("Cannot get accuracy");
@@ -145,45 +141,40 @@ public class Main {
         return result;
     }
 
-    private static double[] calculate(Function function) {
-        int amountOfDivisions = 1;
+    private static double[] calculate(Function function, double lowerLimit, double upperLimit, double accuracy) {
+        int amountOfDivisions = 2;
         double error = 1;
-        double step = 0;
-        double previousValue = 0;
+        double step = (upperLimit - lowerLimit)/amountOfDivisions;;
+        double previousValue = (step / 3)*(function.calculateY(lowerLimit) +
+                calculateSum(function, amountOfDivisions, step, lowerLimit) +
+                function.calculateY(upperLimit));;
         double currentValue = 0;
 
-        while (error > function.getAccuracy() && amountOfDivisions < 1000000000) {
+        while (error > accuracy && amountOfDivisions < 1000000000) {
 
-            amountOfDivisions *= 2;
-            step = (function.getUpperLimit()-function.getLowerLimit())/amountOfDivisions;
+            step = (upperLimit - lowerLimit)/(amountOfDivisions * 2);
 
-            previousValue = (step / 3)*(function.calculateY(function.getLowerLimit()) +
-                    calculateSum(function, amountOfDivisions, step) +
-                    function.calculateY(function.getUpperLimit()));
-
-            step = (function.getUpperLimit()-function.getLowerLimit())/(amountOfDivisions * 2);
-
-            currentValue = (step / 3)*(function.calculateY(function.getLowerLimit()) +
-                    calculateSum(function,amountOfDivisions * 2, step) +
-                    function.calculateY(function.getUpperLimit()));
+            currentValue = (step / 3)*(function.calculateY(lowerLimit) +
+                    calculateSum(function,amountOfDivisions * 2, step, lowerLimit) +
+                    function.calculateY(upperLimit));
 
             error = (Math.abs(currentValue - previousValue))/15;
 
+            amountOfDivisions *= 2;
+
+            previousValue = currentValue;
         }
 
-        double[] array = new double[3];
-        array[0]=currentValue;
-        array[1]= amountOfDivisions;
-        array[1+1]=error;
+        double[] array = { currentValue, amountOfDivisions, error};
         return array;
     }
 
-    private static double calculateSum(Function function, double stepCounter,  double step){
+    private static double calculateSum(Function function, double stepCounter,  double step, double lowerLimit){
         double result = 0;
         for (int i = 1; i < stepCounter; ++i){
-            result += 4 * function.calculateY(function.getLowerLimit()+step*(i));
+            result += 4 * function.calculateY(lowerLimit +step*(i));
             ++i;
-            result += 2 * function.calculateY(function.getLowerLimit()+step*(i));
+            result += 2 * function.calculateY(lowerLimit +step*(i));
         }
         return result;
     }
