@@ -7,9 +7,4 @@ public class LinearFunction implements Function {
         return 5*x -3;
     }
 
-    @Override
-    public boolean isValid(double lowerLimit, double upperLimit) {
-        return true;
-    }
-
 }

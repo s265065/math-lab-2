@@ -7,9 +7,4 @@ public class ParabolicFunction implements Function {
         return Math.pow(x, 2);
     }
 
-    @Override
-    public boolean isValid(double lowerLimit, double upperLimit) {
-        return true;
-    }
-
 }

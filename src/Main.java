@@ -5,6 +5,8 @@ import java.util.Scanner;
 
 public class Main {
 
+    private static final double EPSILON = 1e-9;
+
     public static void main(String[] args){
 
         Scanner scanner = new Scanner(System.in);
@@ -60,7 +62,10 @@ public class Main {
         System.out.println("Input accuracy");
         double accuracy = input();
 
+        boolean validInterval = true;
+
         if (upperLimit < lowerLimit) {
+            validInterval = false;
             upperLimit += lowerLimit;
             lowerLimit = upperLimit - lowerLimit;
             upperLimit -= lowerLimit;
@@ -71,14 +76,15 @@ public class Main {
             return;
         }
 
-        if (function.isValid(lowerLimit, upperLimit)) {
-           double result[] = calculate(function, lowerLimit, upperLimit, accuracy);
-           if (result[1+1]  < accuracy)
-               System.out.println("Integral  i: " + result[0] + "\n amount of div i: " + result[1]+"\n error i: "+result[1+1]);
-           else System.out.println("Cannot get accuracy");
-        } else {
-            System.out.println("Integral diverge");
+
+        double result[] = calculate(function, lowerLimit, upperLimit, accuracy);
+        if (Double.isFinite(result[0])) {
+            if  (!validInterval) result[0] *= -1;
+            if (result[2] < accuracy)
+                System.out.println("Integral  is: " + result[0] + "\n amount of div is: " + result[1] + "\n error is: " + result[1 + 1]);
+            else System.out.println("Cannot get accuracy");
         }
+        else System.out.println("Integral is not convergence");
 
 
     }
@@ -143,24 +149,31 @@ public class Main {
 
     private static double[] calculate(Function function, double lowerLimit, double upperLimit, double accuracy) {
         int amountOfDivisions = 2;
-        double error = 1;
+        double error = 2;
         double step = (upperLimit - lowerLimit)/amountOfDivisions;;
-        double previousValue = (step / 3)*(function.calculateY(lowerLimit) +
-                calculateSum(function, amountOfDivisions, step, lowerLimit) +
-                function.calculateY(upperLimit));;
+
+        double lowValue = function.calculateY(lowerLimit);
+        if (!Double.isFinite(lowValue)) lowValue = function.calculateY(lowerLimit + EPSILON);
+
+        double upValue = function.calculateY(upperLimit);
+        if (!Double.isFinite(lowValue)) upValue = function.calculateY(upperLimit - EPSILON);
+
+        double value = 4 * function.calculateY(lowerLimit + step);
+        if (!Double.isFinite(value))
+            value = 4 *(function.calculateY((lowerLimit + step + EPSILON)) + function.calculateY(lowerLimit + step - EPSILON))/2;
+
+        double previousValue = (step / 3)*(lowValue + value + upValue);;
         double currentValue = 0;
 
         while (error > accuracy && amountOfDivisions < 1000000000) {
 
-            step = (upperLimit - lowerLimit)/(amountOfDivisions * 2);
-
-            currentValue = (step / 3)*(function.calculateY(lowerLimit) +
-                    calculateSum(function,amountOfDivisions * 2, step, lowerLimit) +
-                    function.calculateY(upperLimit));
-
-            error = (Math.abs(currentValue - previousValue))/15;
-
             amountOfDivisions *= 2;
+
+            step = (upperLimit - lowerLimit)/amountOfDivisions;
+
+            currentValue = (step / 3)*(calculateSum(function,amountOfDivisions, step, lowerLimit));
+
+            error = (Math.abs(currentValue - previousValue)/15);
 
             previousValue = currentValue;
         }
@@ -171,14 +184,34 @@ public class Main {
 
     private static double calculateSum(Function function, double stepCounter,  double step, double lowerLimit){
         double result = 0;
-        for (int i = 1; i < stepCounter; ++i){
-            result += 4 * function.calculateY(lowerLimit +step*(i));
-            ++i;
-            result += 2 * function.calculateY(lowerLimit +step*(i));
+        double value;
+        for (int i = 1; i < stepCounter; i+=1+1){
+
+
+            value = function.calculateY(lowerLimit + step*(i-1));
+            if (!Double.isFinite(value))
+                if (i==0)
+                    value = function.calculateY(lowerLimit + EPSILON);
+                else
+                    value = (function.calculateY(lowerLimit + step*(i-1) + EPSILON) + function.calculateY(lowerLimit + step*(i-1) - EPSILON))/2;
+            result += value;
+
+            value = function.calculateY(lowerLimit + step*i);
+            if (!Double.isFinite(value))
+                value = (function.calculateY(lowerLimit + step*i + EPSILON) + function.calculateY(lowerLimit + step*i - EPSILON))/2;
+            result += 4 * value;
+
+
+            value = function.calculateY(lowerLimit + step*(i+1));
+            if (!Double.isFinite(value))
+                if (i==stepCounter)
+                    value = function.calculateY(lowerLimit + EPSILON);
+                else
+                    value = (function.calculateY(lowerLimit + step*(i+1) + EPSILON) + function.calculateY(lowerLimit + step*(i+1) - EPSILON))/2;
+            result += value;
         }
         return result;
     }
-
 
     private static void help() {
         System.out.println("here'll be help");

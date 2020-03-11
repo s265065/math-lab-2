@@ -7,8 +7,4 @@ public class SinFunction  implements Function {
         return Math.sin(x);
     }
 
-    @Override
-    public boolean isValid(double lowerLimit, double upperLimit) {
-        return true;
-    }
 }

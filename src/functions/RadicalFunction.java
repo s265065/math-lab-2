@@ -7,9 +7,4 @@ public class RadicalFunction implements Function {
         return Math.sqrt(x);
     }
 
-    @Override
-    public boolean isValid(double lowerLimit, double upperLimit) {
-        return (upperLimit > 0) && (lowerLimit > 0);
-    }
-
 }
