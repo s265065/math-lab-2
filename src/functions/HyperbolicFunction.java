@@ -5,7 +5,7 @@ public class HyperbolicFunction implements Function {
     @Override
     public double calculateY(double x)
     {
-        return 1 / x;
+        return 4 / x;
     }
 
 }

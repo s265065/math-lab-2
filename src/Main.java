@@ -12,7 +12,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("input command. type help to get list of all available commands");
-        help();
+        System.out.println("Type input for choosing function to integrate or type quit to end working");
         while (true) {
             System.out.print("> ");
             String s = scanner.next();
@@ -22,10 +22,6 @@ public class Main {
 
     private static void doCommand(String command) {
         switch (command) {
-            case "help": {
-                help();
-                return;
-            }
 
             case "input": {
                 manualInput();
@@ -45,18 +41,19 @@ public class Main {
 
         System.out.println("Choose on of these functions. Input number of function you ant to integrate \n" +
                 "1) y = 5x - 3 \n" +
-                "2) y = 2 / x \n" +
+                "2) y = 4 / x \n" +
                 "3) y = x^2 \n" +
                 "4) y = sqrt(x) \n"+
-                "5) y = sin(x) ");
+                "5) y = sin(x) \n" +
+                "6) y = cos(x) \n"+
+                "7) y = ln(x) \n"+
+                "8) y = e^x \n");
         Function function = choose();
 
-        System.out.println("input lower limit  of the integration\n " +
-                "Be careful! If you ant to input double you have to use only a dot not a comma");
+        System.out.println("input lower limit  of the integration");
         double lowerLimit = input();
 
-        System.out.println("input upper limit  of the integration\n " +
-                "Be careful! If you ant to input double you have to use only a dot not a comma");
+        System.out.println("input upper limit  of the integration");
         double upperLimit = input();
 
         System.out.println("Input accuracy");
@@ -99,26 +96,34 @@ public class Main {
         switch (number){
             case "1":{
                 result = new LinearFunction();
-                System.out.println("Your function is  y = 5x - 3 ");
                 break;
             }
             case "2":{
                 result = new HyperbolicFunction();
-                System.out.println("Your function is  y = 4 / x ");
                 break;
             }
             case "3":{
                 result = new ParabolicFunction();
-                System.out.println("Your function is  y = x^4 ");
                 break;
             }
             case "4":{
                 result = new RadicalFunction();
-                System.out.println("Your function is  y = sqrt(x) ");
                 break;
             }
             case "5":{
                 result = new SinFunction();
+                break;
+            }
+            case "6":{
+                result = new CosFunction();
+                break;
+            }
+            case "7":{
+                result = new LogFunction();
+                break;
+            }
+            case "8":{
+                result = new ExpFunction();
                 break;
             }
             default:{
@@ -150,7 +155,7 @@ public class Main {
     private static double[] calculate(Function function, double lowerLimit, double upperLimit, double accuracy) {
         int amountOfDivisions = 2;
         double error = 2;
-        double step = (upperLimit - lowerLimit)/amountOfDivisions;;
+        double step = (upperLimit - lowerLimit)/amountOfDivisions;
 
         double lowValue = function.calculateY(lowerLimit);
         if (!Double.isFinite(lowValue)) lowValue = function.calculateY(lowerLimit + EPSILON);
@@ -162,7 +167,7 @@ public class Main {
         if (!Double.isFinite(value))
             value = 4 *(function.calculateY((lowerLimit + step + EPSILON)) + function.calculateY(lowerLimit + step - EPSILON))/2;
 
-        double previousValue = (step / 3)*(lowValue + value + upValue);;
+        double previousValue = (step / 3)*(lowValue + value + upValue);
         double currentValue = 0;
 
         while (error > accuracy && amountOfDivisions < 1000000000) {
@@ -184,9 +189,11 @@ public class Main {
 
     private static double calculateSum(Function function, double stepCounter,  double step, double lowerLimit){
         double result = 0;
-        double value;
-        for (int i = 1; i < stepCounter; i+=1+1){
 
+        double value;
+        for (int i = 0; i < stepCounter; i+=2){
+
+            double tmp = 0;
 
             value = function.calculateY(lowerLimit + step*(i-1));
             if (!Double.isFinite(value))
@@ -194,12 +201,13 @@ public class Main {
                     value = function.calculateY(lowerLimit + EPSILON);
                 else
                     value = (function.calculateY(lowerLimit + step*(i-1) + EPSILON) + function.calculateY(lowerLimit + step*(i-1) - EPSILON))/2;
-            result += value;
+            tmp += value;
+
 
             value = function.calculateY(lowerLimit + step*i);
             if (!Double.isFinite(value))
                 value = (function.calculateY(lowerLimit + step*i + EPSILON) + function.calculateY(lowerLimit + step*i - EPSILON))/2;
-            result += 4 * value;
+            tmp += 4 * value;
 
 
             value = function.calculateY(lowerLimit + step*(i+1));
@@ -208,13 +216,11 @@ public class Main {
                     value = function.calculateY(lowerLimit + EPSILON);
                 else
                     value = (function.calculateY(lowerLimit + step*(i+1) + EPSILON) + function.calculateY(lowerLimit + step*(i+1) - EPSILON))/2;
-            result += value;
+            tmp += value;
+
+            result += tmp;
         }
         return result;
-    }
-
-    private static void help() {
-        System.out.println("here'll be help");
     }
 
 }
